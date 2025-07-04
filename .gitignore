@@ -3,3 +3,10 @@ __pycache__/config.cpython-313.pyc
 models/__pycache__/gemini.cpython-313.pyc
 telegram/handlers/__pycache__/__init__.cpython-313.pyc
 telegram/handlers/__pycache__/text.cpython-313.pyc
+models/__pycache__/gemini_core.cpython-313.pyc
+models/__pycache__/gemini_with_tools.cpython-313.pyc
+tools/__pycache__/get_yt_video_summary.cpython-313.pyc
+tools/__pycache__/muliply.cpython-313.pyc
+tools/model/__pycache__/get_yt_video_summary.cpython-313.pyc
+tools/model/__pycache__/muliply.cpython-313.pyc
+tools/telegram/__pycache__/send_long_message.cpython-313.pyc
