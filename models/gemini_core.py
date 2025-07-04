@@ -11,10 +11,9 @@ system_prompt = (
     "You are a helpful assistant. "
     "You will answer questions and provide information based on the provided contents."
     "Don't use text formatting in your responses."
-    )
+)
 
 async def generate_content(prompt: str) -> str:
-    """Базовая функция для генерации контента без инструментов."""
     api_response = await async_client.models.generate_content(
         model=config.gemini_model,
         contents=[prompt],
