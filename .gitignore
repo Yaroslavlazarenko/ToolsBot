@@ -1,1 +1,5 @@
 .env
+__pycache__/config.cpython-313.pyc
+models/__pycache__/gemini.cpython-313.pyc
+telegram/handlers/__pycache__/__init__.cpython-313.pyc
+telegram/handlers/__pycache__/text.cpython-313.pyc
