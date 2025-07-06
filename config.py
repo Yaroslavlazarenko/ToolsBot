@@ -6,3 +6,5 @@ class Config(BaseSettings):
     bot_token: str
     gemini_api_key: str
     gemini_model: str
+    rate_limit: int
+    rate_limit_window: int

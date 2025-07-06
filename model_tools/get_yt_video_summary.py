@@ -1,7 +1,6 @@
 import asyncio
-from models.gemini_core import generate_content
 
-from .get_yt_video_subtitles import get_transcript_text
+from core.get_yt_video_subtitles import get_transcript_text
 
 async def get_yt_video_summary(video_url: str, response_language: str = 'ru') -> str:
     """
@@ -13,6 +12,8 @@ async def get_yt_video_summary(video_url: str, response_language: str = 'ru') ->
         response_language (str): Язык ответа, например 'ru' для русского. Если не указан, будет использован 'ru' (русский).
     """
     print(f"[Tool Call] Вызов get_yt_video_suextract_video_id, get_transcript_textmmary с URL: {video_url} и языком ответа: {response_language}")
+
+    from app.services import general_purpose_service
 
     try:
         # Для запуска синхронной функции в асинхронном коде
@@ -43,5 +44,5 @@ async def get_yt_video_summary(video_url: str, response_language: str = 'ru') ->
         "ТВОЙ ОТВЕТ:"
     )
 
-    response = await generate_content(final_prompt)
+    response = await general_purpose_service.generate(final_prompt)
     return response

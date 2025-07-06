@@ -12,36 +12,18 @@ def extract_video_id(url: str) -> str | None:
     return match.group(1) if match else None
 
 def get_transcript_text(video_url: str, preferred_lang: str = 'en') -> str:
-    """
-    Получает и возвращает полный текст субтитров для указанного YouTube видео.
-
-    Args:
-        video_id (str): ID видео YouTube.
-        preferred_lang (str): Предпочтительный язык субтитров (например, 'ru', 'en').
-                               По умолчанию 'en'.
-
-    Raises:
-        ValueError: Если субтитры отключены, не найдены или произошла другая ошибка.
-
-    Returns:
-        str: Сплошной текст субтитров.
-    """
     video_id = extract_video_id(video_url)
     if not video_id:
-        print("[Tool Call] Неверный формат ссылки на YouTube.")
         return "Неверный формат ссылки на YouTube. Убедитесь, что передана полная ссылка."
 
     try:
-        # Получаем список всех доступных субтитров для видео
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
 
-        # Формируем список языков для поиска: сначала предпочтительный, потом английский (если он не был предпочтительным)
         search_langs = [preferred_lang]
         if 'en' not in search_langs:
             search_langs.append('en')
 
         transcript = None
-        # Пытаемся найти субтитры на одном из языков из списка
         for lang_code in search_langs:
             try:
                 transcript = transcript_list.find_transcript([lang_code])
@@ -59,7 +41,7 @@ def get_transcript_text(video_url: str, preferred_lang: str = 'en') -> str:
 
         # Загружаем данные субтитров и объединяем их в одну строку
         srt_data = transcript.fetch()
-        transcript_text = " ".join([entry['text'] for entry in srt_data])
+        transcript_text = " ".join([entry.text for entry in srt_data])
 
         return transcript_text
 
