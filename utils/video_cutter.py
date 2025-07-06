@@ -2,20 +2,19 @@ import subprocess
 import os
 
 def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_dir: str = None) -> list:
-    if not os.path.isfile(input_filename):
-        raise FileNotFoundError(f"File '{input_filename}' not found.")
-
+    yt_dir = os.path.join(os.getcwd(), 'yt_videos')
+    yt_file_path = os.path.join(yt_dir, input_filename) if not os.path.isabs(input_filename) else input_filename
+    if not os.path.isfile(yt_file_path):
+        raise FileNotFoundError(f"File '{yt_file_path}' not found in yt_videos folder.")
     if output_dir is None:
         output_dir = os.getcwd()
     else:
         os.makedirs(output_dir, exist_ok=True)
-
-    base_name = os.path.splitext(os.path.basename(input_filename))[0]
+    base_name = os.path.splitext(os.path.basename(yt_file_path))[0]
     output_pattern = os.path.join(output_dir, f"{base_name}_%03d.mp4")
-
     cmd = [
         "ffmpeg",
-        "-i", input_filename,
+        "-i", yt_file_path,
         "-c", "copy",
         "-map", "0",
         "-segment_time", str(segment_time),
@@ -23,9 +22,7 @@ def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_d
         "-reset_timestamps", "1",
         output_pattern
     ]
-
     subprocess.run(cmd, check=True)
-
     output_files = []
     idx = 0
     while True:
@@ -35,4 +32,8 @@ def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_d
             idx += 1
         else:
             break
+    try:
+        os.remove(yt_file_path)
+    except Exception:
+        pass
     return output_files

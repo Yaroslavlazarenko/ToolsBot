@@ -1,26 +1,13 @@
-# limiter.py
-
-from config import Config
 import time
 from collections import deque
 import asyncio
 
-_global_gemini_limiter = None
-_limiter_lock = asyncio.Lock()
+from typing import Dict
+from core.enums import GeminiModel, RateLimits
 
-async def get_global_gemini_limiter():
-    global _global_gemini_limiter
-    config = Config()
-    
-    if _global_gemini_limiter is not None:
-        return _global_gemini_limiter
+_limiter_pool: Dict[str, 'SlidingWindowLimiter'] | None = None
+_pool_init_lock = asyncio.Lock()
 
-    async with _limiter_lock:
-        if _global_gemini_limiter is None:
-            _global_gemini_limiter = SlidingWindowLimiter(
-                config.rate_limit, config.rate_limit_window
-            )
-    return _global_gemini_limiter
 
 class SlidingWindowLimiter:
     def __init__(self, max_requests: int, window_size: int):
@@ -37,3 +24,23 @@ class SlidingWindowLimiter:
             return True
         else:
             return False
+        
+
+async def get_limiter_pool() -> Dict[str, SlidingWindowLimiter]:
+    global _limiter_pool
+    if _limiter_pool is not None:
+        return _limiter_pool
+    async with _pool_init_lock:
+        if _limiter_pool is None:
+            _limiter_pool = {
+                GeminiModel.GEMINI_2_5_PRO: SlidingWindowLimiter(
+                    max_requests=RateLimits.RATE_LIMIT_2_5_PRO.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
+                ),
+                GeminiModel.GEMINI_2_5_FLASH: SlidingWindowLimiter(
+                    max_requests=RateLimits.RATE_LIMIT_2_5_FLASH.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
+                ),
+                GeminiModel.GEMINI_2_5_FLASH_LITE: SlidingWindowLimiter(
+                    max_requests=RateLimits.RATE_LIMIT_2_5_FLASH_LITE.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
+                ),
+            }
+    return _limiter_pool
