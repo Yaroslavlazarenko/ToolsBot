@@ -1,5 +1,5 @@
-import subprocess
 import os
+import ffmpeg
 
 def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_dir: str = None) -> list:
     yt_dir = os.path.join(os.getcwd(), 'yt_videos')
@@ -12,17 +12,12 @@ def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_d
         os.makedirs(output_dir, exist_ok=True)
     base_name = os.path.splitext(os.path.basename(yt_file_path))[0]
     output_pattern = os.path.join(output_dir, f"{base_name}_%03d.mp4")
-    cmd = [
-        "ffmpeg",
-        "-i", yt_file_path,
-        "-c", "copy",
-        "-map", "0",
-        "-segment_time", str(segment_time),
-        "-f", "segment",
-        "-reset_timestamps", "1",
-        output_pattern
-    ]
-    subprocess.run(cmd, check=True)
+    (
+        ffmpeg
+        .input(yt_file_path)
+        .output(output_pattern, c='copy', map='0', segment_time=segment_time, f='segment', reset_timestamps=1)
+        .run(overwrite_output=True)
+    )
     output_files = []
     idx = 0
     while True:
