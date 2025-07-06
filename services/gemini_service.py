@@ -17,21 +17,24 @@ class GeminiService:
 
     async def generate(self, chat_prompt: List[str]) -> str:
         limiter = await get_global_gemini_limiter()
-        
         while not limiter.allow_request():
             await asyncio.sleep(1)
 
-        genai_config = GenerateContentConfig(
-            system_instruction=self.system_prompt
-        )
-        
+        # Формируем конфиг с tools, если они есть
         if self.tools:
-            genai_config['tools'] = self.tools
+            genai_config = GenerateContentConfig(
+                system_instruction=self.system_prompt,
+                tools=self.tools
+            )
+        else:
+            genai_config = GenerateContentConfig(
+                system_instruction=self.system_prompt
+            )
 
         try:
             api_response = await self.async_client.models.generate_content(
                 model=self.model_name,
-                contents=chat_prompt,   
+                contents=chat_prompt,
                 config=genai_config,
             )
             return api_response.text
