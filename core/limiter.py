@@ -10,6 +10,7 @@ _limiter_lock = asyncio.Lock()
 
 async def get_global_gemini_limiter():
     global _global_gemini_limiter
+    config = Config()
     
     if _global_gemini_limiter is not None:
         return _global_gemini_limiter
@@ -17,7 +18,7 @@ async def get_global_gemini_limiter():
     async with _limiter_lock:
         if _global_gemini_limiter is None:
             _global_gemini_limiter = SlidingWindowLimiter(
-                Config.rate_limit, Config.rate_limit_window
+                config.rate_limit, config.rate_limit_window
             )
     return _global_gemini_limiter
 
