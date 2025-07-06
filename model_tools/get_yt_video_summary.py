@@ -3,6 +3,13 @@ import asyncio
 from core.get_yt_video_subtitles import get_transcript_text
 
 async def get_yt_video_summary(video_url: str, response_language: str = 'ru') -> str:
+    # Проверки на входные атрибуты
+    if not isinstance(video_url, str) or not video_url.strip():
+        raise ValueError("video_url должен быть непустой строкой")
+    if not (video_url.startswith('http://') or video_url.startswith('https://')):
+        raise ValueError("video_url должен начинаться с 'http://' или 'https://'")
+    if not isinstance(response_language, str) or not response_language.strip():
+        raise ValueError("response_language должен быть непустой строкой")
     """
     Создает краткое содержание (саммари) видео с YouTube по его субтитрам.
     Используй эту функцию, когда пользователь отправляет ссылку на YouTube и просит сделать пересказ или краткое содержание.

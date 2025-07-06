@@ -6,6 +6,14 @@ from aiogram.exceptions import TelegramBadRequest
 MAX_MESSAGE_LENGTH = 4096
 
 async def send_message(message: Message, text: str):
+    # Проверки на входящие атрибуты
+    if not isinstance(message, Message):
+        raise TypeError("message должен быть экземпляром aiogram.types.Message")
+    if not isinstance(text, str):
+        raise TypeError("text должен быть строкой")
+    if not text.strip():
+        # Не отправляем пустое сообщение
+        return
     """
     Sends a long message by splitting it into parts if necessary.
     Also sanitizes the text to prevent HTML parsing errors.

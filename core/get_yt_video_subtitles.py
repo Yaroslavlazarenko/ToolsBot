@@ -12,6 +12,15 @@ def extract_video_id(url: str) -> str | None:
     return match.group(1) if match else None
 
 def get_transcript_text(video_url: str, preferred_lang: str = 'en') -> str:
+
+    # Проверки на входные атрибуты
+    if not isinstance(video_url, str) or not video_url.strip():
+        raise ValueError("video_url должен быть непустой строкой")
+    if not (video_url.startswith('http://') or video_url.startswith('https://')):
+        raise ValueError("video_url должен начинаться с 'http://' или 'https://'")
+    if not isinstance(preferred_lang, str) or not preferred_lang.strip():
+        raise ValueError("preferred_lang должен быть непустой строкой")
+
     video_id = extract_video_id(video_url)
     if not video_id:
         return "Неверный формат ссылки на YouTube. Убедитесь, что передана полная ссылка."
