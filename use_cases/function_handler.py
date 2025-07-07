@@ -16,10 +16,17 @@ class FunctionHandler:
     def __init__(self, gemini_service: GeminiService):
         self.gemini_service = gemini_service
 
-    async def get_text_response(self, text_from_router: str) -> str:
+    async def get_hard_text_response(self, text_from_router: str) -> str:
         response = await self.gemini_service.generate_text(
             prompt=text_from_router,
             model=GeminiModel.GEMINI_2_5_PRO
+        )
+        return str(response)
+    
+    async def get_light_text_response(self, text_from_router: str) -> str:
+        response = await self.gemini_service.generate_text(
+            prompt=text_from_router,
+            model=GeminiModel.GEMINI_2_5_FLASH_LITE
         )
         return str(response)
 

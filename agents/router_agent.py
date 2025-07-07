@@ -14,9 +14,11 @@ class RouterAgent:
         return f"""
         You are an AI-dispatcher. Decide which function to call.
 
+
         Available functions:
         - 'analyze_video_content': Call if the request contains a YouTube link (youtube.com or youtu.be) and asks for video analysis.
-        - 'get_text_response': Call for all other cases — general questions, simple dialog, requests to generate something, and for SHORT video summaries (that can be made from subtitles).
+        - 'get_hard_text_response': Call if the user's request requires a detailed, deep, or complex answer, or if the user explicitly asks for a thorough or advanced response. Use this for tasks that need strong reasoning, multi-step logic, or in-depth explanations.
+        - 'get_light_text_response': Call if the user's request is simple, short, or can be answered briefly, or if the user explicitly asks for a quick, lightweight, or basic answer. Use this for casual chat, short facts, or when a fast response is preferred over depth.
 
         IMPORTANT: Always instruct the next agent to answer in the same language as the user's request, unless the user explicitly asks for a response in another language. Only switch the response language if the user clearly requests it.
 
