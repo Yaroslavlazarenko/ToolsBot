@@ -73,7 +73,7 @@ ffmpeg-python
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Yaroslavlazarenko/ToolsBot.git
-cd telegram-ai-bot
+cd ToolsBot
 ```
 
 ### 2. Create Virtual Environment

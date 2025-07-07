@@ -10,4 +10,5 @@ class RateLimits(int, Enum):
     RATE_LIMIT_2_5_FLASH=11
     RATE_LIMIT_2_5_FLASH_LITE=16
     RATE_LIMIT_2_5_PRO=6
+    
     RATE_LIMIT_WINDOW=60
