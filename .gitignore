@@ -16,3 +16,4 @@ utils/__pycache__/download_yt_video.cpython-313.pyc
 utils/__pycache__/video_cutter.cpython-313.pyc
 yt_videos
 segments
+main.py

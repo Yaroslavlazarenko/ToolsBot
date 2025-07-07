@@ -15,7 +15,7 @@ from use_cases.function_handler import FunctionHandler
 from telegram.responder import TelegramResponder
 
 async def main():
-    config = Config()
+    config = Config() # pyright: ignore[reportCallIssue]
 
     gemini_service = GeminiService()
     router_agent = RouterAgent(gemini_service=gemini_service)

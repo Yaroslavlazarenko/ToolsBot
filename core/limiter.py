@@ -2,10 +2,9 @@ import time
 from collections import deque
 import asyncio
 
-from typing import Dict
-from core.enums import GeminiModel, RateLimits
+from core.enums import MODEL_TO_RATE_LIMIT_MAP, RateLimits
 
-_limiter_pool: Dict[str, 'SlidingWindowLimiter'] | None = None
+_limiter_pool: dict[str, "SlidingWindowLimiter"] | None = None
 _pool_init_lock = asyncio.Lock()
 
 
@@ -17,8 +16,10 @@ class SlidingWindowLimiter:
 
     def allow_request(self) -> bool:
         current_time = time.time()
+
         while self.requests and self.requests[0] <= current_time - self.window_size:
             self.requests.popleft()
+
         if len(self.requests) < self.max_requests:
             self.requests.append(current_time)
             return True
@@ -26,21 +27,19 @@ class SlidingWindowLimiter:
             return False
         
 
-async def get_limiter_pool() -> Dict[str, SlidingWindowLimiter]:
+async def get_limiter_pool() -> dict[str, SlidingWindowLimiter]:
     global _limiter_pool
+
     if _limiter_pool is not None:
         return _limiter_pool
+    
     async with _pool_init_lock:
         if _limiter_pool is None:
             _limiter_pool = {
-                GeminiModel.GEMINI_2_5_PRO: SlidingWindowLimiter(
-                    max_requests=RateLimits.RATE_LIMIT_2_5_PRO.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
-                ),
-                GeminiModel.GEMINI_2_5_FLASH: SlidingWindowLimiter(
-                    max_requests=RateLimits.RATE_LIMIT_2_5_FLASH.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
-                ),
-                GeminiModel.GEMINI_2_5_FLASH_LITE: SlidingWindowLimiter(
-                    max_requests=RateLimits.RATE_LIMIT_2_5_FLASH_LITE.value, window_size=RateLimits.RATE_LIMIT_WINDOW.value
-                ),
+                model_enum.value: SlidingWindowLimiter(
+                    max_requests=rate_limit_enum.value,
+                    window_size=RateLimits.RATE_LIMIT_WINDOW.value
+                )
+                for model_enum, rate_limit_enum in MODEL_TO_RATE_LIMIT_MAP.items()
             }
     return _limiter_pool
