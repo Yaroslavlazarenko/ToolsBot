@@ -21,16 +21,21 @@ class GeminiService:
         if limiter:
             while not limiter.allow_request():
                 await asyncio.sleep(1)
-        else:
-            pass
-        try:
-            return await self.async_client.models.generate_content(
-                model=model,
-                contents=contents,
-                config=genai_config
-            )
-        except Exception as e:
-            return {"error": "API_CALL_FAILED", "details": str(e)}
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                return await self.async_client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=genai_config
+                )
+            except Exception as e:
+                err_str = str(e)
+                if '503' in err_str or 'Service Unavailable' in err_str:
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                return {"error": "API_CALL_FAILED", "details": err_str}
 
     async def generate_text(self, prompt: str, model: str = GeminiModel.GEMINI_2_5_FLASH, video_part: Optional[Part] = None) -> str:
         genai_config = GenerateContentConfig(system_instruction=self.system_prompt)
