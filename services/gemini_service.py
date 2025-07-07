@@ -13,7 +13,7 @@ class GeminiService:
     def __init__(self):
         config = Config()
         self.async_client = Client(api_key=config.gemini_api_key).aio
-        self.system_prompt = "You are a helpful and efficient AI assistant."
+        self.system_prompt = "You are a helpful and efficient AI assistant. Don't use markdown formatting in your responses, just plain text. Always respond in the same language as the user's request, unless explicitly asked to switch languages."
 
     async def _base_generate(self, contents: List[Union[str, Part]], model: str, genai_config: GenerateContentConfig) -> Any:
         limiter_pool = await get_limiter_pool()
