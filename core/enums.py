@@ -19,4 +19,8 @@ MODEL_TO_RATE_LIMIT_MAP: dict[GeminiModel, RateLimits] = {
     GeminiModel.GEMINI_2_5_FLASH_LITE: RateLimits.RATE_LIMIT_2_5_FLASH_LITE,
 }
 
+class FunctionName(StrEnum):
+    ANALYZE_VIDEO_CONTENT = "analyze_video_content"
+    GET_HARD_TEXT_RESPONSE = "get_hard_text_response"
+    GET_LIGHT_TEXT_RESPONSE = "get_light_text_response"
 

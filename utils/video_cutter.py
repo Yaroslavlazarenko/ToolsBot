@@ -1,45 +1,19 @@
 import os
 import ffmpeg
 
-def cut_video_to_segments(input_filename: str, segment_time: int = 600, output_dir: str | None = None) -> list:
+def cut_video_to_segments(input_filename: str, segment_time: int, output_dir: str) -> list[str]:
+    if not os.path.isfile(input_filename):
+        raise FileNotFoundError(f"Input file not found: '{input_filename}'")
     
-    yt_dir = os.path.join(os.getcwd(), 'yt_videos')
-    yt_file_path = os.path.join(yt_dir, input_filename) if not os.path.isabs(input_filename) else input_filename
-    
-    if not os.path.isfile(yt_file_path):
-        raise FileNotFoundError(f"File '{yt_file_path}' not found in yt_videos folder.")
-    
-    if output_dir is None:
-        output_dir = os.getcwd()
-    else:
-        os.makedirs(output_dir, exist_ok=True)
-
-    base_name = os.path.splitext(os.path.basename(yt_file_path))[0]
+    os.makedirs(output_dir, exist_ok=True)
+    base_name = os.path.splitext(os.path.basename(input_filename))[0]
     output_pattern = os.path.join(output_dir, f"{base_name}_%03d.mp4")
 
-    (
-        ffmpeg
-        .input(yt_file_path)
-        .output(output_pattern, c='copy', map='0', segment_time=segment_time, f='segment', reset_timestamps=1)
-        .run(overwrite_output=True)
-    )
-
-    output_files = []
-    idx = 0
-
-    while True:
-        segment_file = os.path.join(output_dir, f"{base_name}_{idx:03d}.mp4")
-
-        if os.path.exists(segment_file):
-            output_files.append(segment_file)
-            idx += 1
-        else:
-            break
-
     try:
-        os.remove(yt_file_path)
+        ffmpeg.input(input_filename).output(
+            output_pattern, c='copy', map='0', segment_time=segment_time, f='segment', reset_timestamps=1
+        ).run(overwrite_output=True, quiet=True)
+    except ffmpeg.Error as e:
+        raise IOError(f"FFmpeg failed to cut video: {e.stderr.decode()}") from e
 
-    except Exception:
-        pass
-    
-    return output_files
+    return sorted([os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.startswith(base_name)])

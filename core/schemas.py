@@ -1,16 +1,25 @@
 from google.genai.types import Schema, Type
 
-from enum import StrEnum
-
-class FunctionName(StrEnum):
-    ANALYZE_VIDEO_CONTENT = "analyze_video_content"
-    GET_HARD_TEXT_RESPONSE = "get_hard_text_response"
-    GET_LIGHT_TEXT_RESPONSE = "get_light_text_response"
+from .enums import FunctionName
 
 FUNCTION_DESCRIPTIONS = {
-    FunctionName.ANALYZE_VIDEO_CONTENT: "Call if the request contains a YouTube link (youtube.com or youtu.be) and asks for video analysis.",
-    FunctionName.GET_HARD_TEXT_RESPONSE: "Call if the user's request requires a detailed, deep, or complex answer, or if the user explicitly asks for a thorough or advanced response. Use this for tasks that need strong reasoning, multi-step logic, or in-depth explanations.",
-    FunctionName.GET_LIGHT_TEXT_RESPONSE: "Call if the user's request is simple, short, or can be answered briefly, or if the user explicitly asks for a quick, lightweight, or basic answer. Use this for casual chat, short facts, or when a fast response is preferred over depth."
+    FunctionName.ANALYZE_VIDEO_CONTENT: (
+        "Analyzes the content of a YouTube video based on a user's request. "
+        "This function requires the full user prompt containing the YouTube link (e.g., youtube.com, youtu.be) "
+        "and the specific analysis instructions. The prompt should be passed as the 'user_prompt' argument."
+    ),
+    
+    FunctionName.GET_HARD_TEXT_RESPONSE: (
+        "Responds to a user's request that requires a detailed, deep, or complex answer. "
+        "Use this for tasks needing strong reasoning or in-depth explanations. "
+        "The function requires the full user's request text to be passed as the 'user_prompt' argument."
+    ),
+    
+    FunctionName.GET_LIGHT_TEXT_RESPONSE: (
+        "Responds to a simple or short user's request that can be answered briefly. "
+        "Use this for casual chat, short facts, or when a fast response is preferred. "
+        "The function requires the full user's request text to be passed as the 'user_prompt' argument."
+    )
 }
 
 def get_routing_schema() -> Schema:
@@ -20,9 +29,9 @@ def get_routing_schema() -> Schema:
         properties={
             'text_for_next_step': Schema(
                 type=Type.STRING,
-                description="A clear instruction for the next agent: reformulate the user's " \
-                "request as a direct instruction, including all necessary context and requirements. " \
-                "The next agent will treat this as an explicit instruction to follow."
+                description="The user's original and UNMODIFIED request text. " \
+                            "Just copy the user's text here EXACTLY as it was written. " \
+                            "DO NOT change, shorten, or rephrase it in any way."
             ),
             'function_to_call': Schema(
                 type=Type.STRING,
