@@ -72,7 +72,7 @@ ffmpeg-python
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/telegram-ai-bot.git
+git clone https://github.com/Yaroslavlazarenko/ToolsBot.git
 cd telegram-ai-bot
 ```
 
