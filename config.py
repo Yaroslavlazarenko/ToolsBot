@@ -19,3 +19,8 @@ class Config(BaseSettings):
 
     # Настройки API
     api_max_retries: int = 3
+
+    WEBHOOK_HOST: str
+    WEBHOOK_PATH: str    
+    WEBAPP_HOST: str         
+    WEBAPP_PORT: int
