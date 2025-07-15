@@ -1,10 +1,7 @@
 from services.gemini_service import GeminiService
 from core.enums import GeminiModel
 from use_cases.video_processor import VideoProcessor
-from google import genai
 from core.exceptions import VideoProcessingError
-
-client = genai.Client()
 
 class FunctionHandler:
     def __init__(self, gemini_service: GeminiService, video_processor: VideoProcessor):
