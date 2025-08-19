@@ -15,7 +15,7 @@ async def handle_video_confirmation(
     callback_query: types.CallbackQuery,
     callback_data: VideoCallback,
     orchestrator: OrchestratorAgent,
-    state: FSMContext  # <--- ИЗМЕНЕНИЕ
+    state: FSMContext
 ):
     await callback_query.answer()
     message_to_edit = callback_query.message
@@ -28,7 +28,7 @@ async def handle_video_confirmation(
         await orchestrator.launch_analysis_task(
             video_id=callback_data.video_id,
             original_message=message_to_edit,
-            state=state  # <--- ИЗМЕНЕНИЕ
+            state=state
         )
         
         cancel_button = types.InlineKeyboardButton(
@@ -46,7 +46,7 @@ async def handle_video_confirmation(
         )
 
     elif callback_data.action == "cancel":
-        logger.info(f"User {callback_query.from_user.id} cancelled before starting for video_id: {callback_data.video_id}")
+        logger.info(f"User {callback_query.from_user.id} cancelled before starting.")
         await message_to_edit.edit_text("❌ Обработка отменена.", reply_markup=None)
 
 @router.callback_query(CancelCallback.filter())
@@ -60,7 +60,7 @@ async def handle_cancel_processing(
     was_cancelled = task_manager.cancel_task(identifier)
     
     if was_cancelled:
-        logger.info(f"Cancellation signal sent for task {identifier} by user {callback_query.from_user.id}")
+        logger.info(f"Cancellation signal sent for task {identifier}")
     else:
-        logger.warning(f"Could not cancel task {identifier} for user {callback_query.from_user.id}.")
-        # Не редактируем сообщение здесь, чтобы не конфликтовать с возможным сообщением о завершении
+        logger.warning(f"Could not cancel task {identifier}. It might be already finished.")
+        await callback_query.message.edit_text("Не удалось отменить. Возможно, обработка уже завершена.")

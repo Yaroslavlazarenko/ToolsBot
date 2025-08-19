@@ -42,46 +42,29 @@ class FunctionHandler:
             filesize = video_info.get('filesize', 0)
             duration_minutes = duration / 60
 
-            # --- НАЧАЛО РАСЧЕТА ДИАПАЗОНА ---
-            
-            # Компоненты, общие для обоих расчетов
             internet_speed_mbps = 10
             speed_in_bytes = internet_speed_mbps * 1024 * 1024
             transfer_time_minutes = (filesize / speed_in_bytes) * 2 / 60 if filesize > 0 else 0
             analysis_time_minutes = duration_minutes / 60
             
-            requests_per_minute = RateLimits.RATE_LIMIT_2_5_FLASH.value # e.g., 11
-            
-            # Расчет 1: Ожидание на основе лимита ЗАПРОСОВ
+            requests_per_minute = RateLimits.RATE_LIMIT_2_5_FLASH.value
             num_segments = math.ceil(duration_minutes / 10)
             gemini_wait_time_minutes = (num_segments / requests_per_minute) if requests_per_minute > 0 else 0
 
-            # Расчет 2: Ожидание на основе лимита ТОКЕНОВ (по вашей формуле)
-            # Учитываем, что часть видео обработается в первую минуту
             remaining_duration = max(0, duration_minutes - (10 * requests_per_minute))
-            # 16 - это лимит для другой, более медленной модели, который мы используем для симуляции троттлинга
-            
-            gemini_wait_time_minutes1 = ((remaining_duration / 16) + 1) if remaining_duration > 0 else 0
+            token_processing_rate = RateLimits.RATE_LIMIT_2_5_FLASH_LITE.value
+            gemini_wait_time_minutes1 = ((remaining_duration / token_processing_rate) + 1) if remaining_duration > 0 else 0
 
-            # Базовое время (передача + сам анализ)
             base_time = transfer_time_minutes + analysis_time_minutes
-            
-            # Минимальное и максимальное общее время
             min_total_time = base_time + gemini_wait_time_minutes
             max_total_time = base_time + max(gemini_wait_time_minutes, gemini_wait_time_minutes1)
 
             self.logger.info(
-                f"Time estimation for {video_id}: "
-                f"Base={base_time:.2f}m, "
-                f"Wait1(req)={gemini_wait_time_minutes:.2f}m, "
-                f"Wait2(token)={gemini_wait_time_minutes1:.2f}m. "
-                f"Total Range=[{min_total_time:.1f}m - {max_total_time:.1f}m]"
+                f"Time estimation for {video_id}: Total Range=[{min_total_time:.1f}m - {max_total_time:.1f}m]"
             )
 
-            # Формируем красивый ответ для пользователя
             if max_total_time < 1:
                 estimate_text = "Обработка займет меньше минуты.\n\nНачать?"
-            # Если разница между мин и макс меньше минуты, показываем одно значение
             elif (max_total_time - min_total_time) < 1:
                 estimate_text = (f"Видео будет обрабатываться примерно {max_total_time:.1f} минут.\n\nНачать обработку?")
             else:
@@ -91,12 +74,12 @@ class FunctionHandler:
         except Exception as e:
             self.logger.error(f"Error during estimation: {e}", exc_info=True)
             return {'type': 'text', 'content': f"Ошибка при получении данных о видео: {e}"}
+        
 
     async def execute_video_analysis(self, video_id: str, original_user_prompt: str, language: str, message=None) -> str:
         self.logger.info(f"User {message.from_user.id} requested analysis for video_id: {video_id}")
         
         analysis_entry = await analysis_manager.get_or_create_analysis_entry(video_id)
-        
         is_worker = analysis_entry["status"] == AnalysisStatus.IN_PROGRESS and not analysis_entry["event"].is_set()
 
         if not is_worker:
@@ -107,7 +90,7 @@ class FunctionHandler:
             if analysis_entry["status"] == AnalysisStatus.COMPLETED:
                 return await self.get_user_copy_of_report(analysis_entry["result"], video_id, message.from_user.id)
             else:
-                return analysis_entry["result"] # Возвращаем сообщение об ошибке
+                return analysis_entry["result"]
 
         self.logger.info(f"This process is the designated WORKER for {video_id}.")
         original_video_path = None
@@ -119,7 +102,7 @@ class FunctionHandler:
             duration = float(probe['format']['duration'])
             uploaded_file = await asyncio.to_thread(client.files.upload, file=original_video_path)
             
-            max_wait = math.ceil(duration / 60) + 60; waited=0
+            max_wait = math.ceil(duration / 60) + 600; waited=0
             while uploaded_file.state.name == "PROCESSING" and waited < max_wait:
                 await asyncio.sleep(5); waited+=5
                 uploaded_file = await asyncio.to_thread(client.files.get, name=uploaded_file.name)

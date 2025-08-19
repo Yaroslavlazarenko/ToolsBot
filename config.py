@@ -1,26 +1,11 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from dotenv import load_dotenv
 
-class Config(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+class Config:
+    def __init__(self):
+        load_dotenv()
+        self.bot_token = os.getenv("BOT_TOKEN")
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
 
-    bot_token: str
-    gemini_api_key: str
-    
-    # Промпт по умолчанию для Gemini
-    system_prompt: str = (
-        "You are a helpful and efficient AI assistant. "
-        "Don't use markdown formatting in your responses, just plain text. "
-        "Always respond in the same language as the user's request, "
-        "unless explicitly asked to switch languages."
-    )
-
-    # Настройки для обработки видео
-    video_segment_duration: int = 600  # 10 минут
-
-    # Настройки API
-    api_max_retries: int = 3
-
-    WEBHOOK_HOST: str
-    WEBHOOK_PATH: str    
-    WEBAPP_HOST: str         
-    WEBAPP_PORT: int
+        if not self.bot_token or not self.gemini_api_key:
+            raise ValueError("BOT_TOKEN and GEMINI_API_KEY must be set in the .env file")
