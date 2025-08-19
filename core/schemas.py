@@ -27,18 +27,15 @@ def get_routing_schema() -> Schema:
     return Schema(
         type=Type.OBJECT,
         properties={
-            'text_for_next_step': Schema(
-                type=Type.STRING,
-                description="The user's original and UNMODIFIED request text. " \
-                            "Just copy the user's text here EXACTLY as it was written. " \
-                            "DO NOT change, shorten, or rephrase it in any way."
-            ),
             'function_to_call': Schema(
                 type=Type.STRING,
-                format="enum",
-                enum=[name.value for name in FunctionName],
-                description="Name of the function to call."
+                description="Name of the function to call: 'analyze_video_content', 'get_hard_text_response', or 'get_light_text_response'."
+            ),
+            'language': Schema(
+                type=Type.STRING,
+                description="The detected language of the user's request (e.g., 'Russian', 'English')."
             )
         },
-        required=['text_for_next_step', 'function_to_call']
+        # 'text_for_next_step' больше не требуется
+        required=['function_to_call', 'language']
     )
