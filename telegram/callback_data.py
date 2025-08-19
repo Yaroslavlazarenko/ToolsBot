@@ -1,15 +1,12 @@
 from aiogram.filters.callback_data import CallbackData
 
 class VideoCallback(CallbackData, prefix="vid"):
-    """
-    Данные для кнопок подтверждения (Да/Нет).
-    """
-    action: str  # 'start' или 'cancel'
+    action: str
     video_id: str
 
+# НОВАЯ ФАБРИКА ДЛЯ ОТМЕНЫ
 class CancelCallback(CallbackData, prefix="cancel"):
-    """
-    Данные для кнопки отмены уже запущенного процесса.
-    """
+    # Нам нужен уникальный идентификатор задачи, чтобы знать, что отменять.
+    # Используем ID чата и ID сообщения с кнопками "Да/Нет".
     chat_id: int
     message_id: int

@@ -1,11 +1,7 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class Config:
-    def __init__(self):
-        load_dotenv()
-        self.bot_token = os.getenv("BOT_TOKEN")
-        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+class Config(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-        if not self.bot_token or not self.gemini_api_key:
-            raise ValueError("BOT_TOKEN and GEMINI_API_KEY must be set in the .env file")
+    bot_token: str
+    gemini_api_key: str

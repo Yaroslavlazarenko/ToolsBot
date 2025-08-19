@@ -4,9 +4,8 @@ import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.memory import MemoryStorage  # Убедитесь, что это импортировано
 
-# --- Приводим импорты в порядок ---
 from agents.router_agent import RouterAgent
 from agents.orchestrator_agent import OrchestratorAgent
 from services.gemini_service import GeminiService
@@ -15,6 +14,7 @@ from telegram.responder import TelegramResponder
 from config import Config
 from core.task_manager import task_manager
 from core.analysis_manager import analysis_manager
+
 import telegram.handlers.text as text_handler
 import telegram.handlers.callbacks as callback_handler
 
@@ -27,13 +27,13 @@ async def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     
-    # 1. Создаем хранилище для FSM
+    # 1. Создаем хранилище
     storage = MemoryStorage()
     
-    # 2. Инициализация всех компонентов в правильном порядке
-    gemini_service = GeminiService() # Теперь вызывается без аргументов, как и должно
+    # 2. Инициализация всех компонентов
+    gemini_service = GeminiService()
     router_agent = RouterAgent(gemini_service=gemini_service)
-    function_handler = FunctionHandler(gemini_service=gemini_service) # Теперь вызывается правильно
+    function_handler = FunctionHandler(gemini_service=gemini_service)
     responder = TelegramResponder()
     
     orchestrator = OrchestratorAgent(
@@ -44,16 +44,15 @@ async def main():
     
     bot = Bot(token=config.bot_token, default=DefaultBotProperties(parse_mode=None))
 
-    # 3. Создаем Dispatcher со всеми зависимостями
+    # 3. ПЕРЕДАЕМ ХРАНИЛИЩЕ В ДИСПЕТЧЕР. ЭТО КЛЮЧЕВОЙ МОМЕНТ!
     dispatcher = Dispatcher(
         storage=storage,
         orchestrator=orchestrator,
         responder=responder,
         task_manager=task_manager,
-        analysis_manager=analysis_manager
+        analysis_manager=analysis_manager # Передаем для порядка
     )
 
-    # 4. Подключаем роутеры (убраны опечатки и дубли)
     dispatcher.include_router(text_handler.router)
     dispatcher.include_router(callback_handler.router)
 

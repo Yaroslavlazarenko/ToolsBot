@@ -3,7 +3,9 @@ from typing import Dict, Union
 from aiogram import types
 from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.utils.message import send_message
-from telegram.callback_data import VideoCallback
+
+# ИЗМЕНЕНО: Импортируем из нового файла, разрывая цикл
+from telegram.callback_data import VideoCallback 
 
 class TelegramResponder:
     async def send_response(self, message: types.Message, response_data: Dict[str, Union[str, bool, dict]]):
@@ -16,22 +18,22 @@ class TelegramResponder:
             elif response_type == 'confirmation':
                 await self._send_confirmation(message, response_data)
             else:
-                await send_message(message, "Internal error: failed to form a response.")
+                await send_message(message, "Internal error: failed to form response.")
         except Exception as e:
-            await send_message(message, f"Failed to send a response: {e}")
+            # Логирование ошибки было бы здесь полезно
+            await send_message(message, f"Failed to send response: {e}")
 
-    async def _send_document(self, message: types.Message, file_path: str, caption: str | None):
-        if not file_path or not os.path.isfile(file_path):
+    async def _send_document(self, message: types.Message, file_path: str, caption: str):
+        if not os.path.isfile(file_path):
             await send_message(message, "Internal error: report file not found.")
             return
-        
         input_file = FSInputFile(file_path)
         await message.answer_document(input_file, caption=caption)
-
         try:
             os.remove(file_path)
-        except OSError:
-            pass # Логирование здесь было бы полезно
+        except OSError as e:
+            # Логирование
+            pass
 
     async def _send_confirmation(self, message: types.Message, response_data: dict):
         """Отправляет сообщение с кнопками 'Да' и 'Нет'."""
@@ -48,4 +50,6 @@ class TelegramResponder:
         )
         
         keyboard = InlineKeyboardMarkup(inline_keyboard=[[confirm_button, cancel_button]])
+        
         await message.answer(text, reply_markup=keyboard)
+

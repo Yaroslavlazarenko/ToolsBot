@@ -46,9 +46,12 @@ class OrchestratorAgent:
             final_result = await method_to_call(user_text)
             return self._format_response(final_result)
         else:
-            return {'type': 'text', 'content': f'Internal error: handler for {function_to_call} not found.'}
+            return {'type': 'text', 'content': 'Internal error: handler not found.'}
+
+    # --- ВОТ ВОССТАНОВЛЕННЫЕ МЕТОДЫ ---
 
     async def launch_analysis_task(self, video_id: str, original_message: types.Message, state: FSMContext):
+        """Запускает тяжелую задачу анализа в фоне и сохраняет ее в TaskManager."""
         task_identifier: TaskIdentifier = (original_message.chat.id, original_message.message_id)
         task = asyncio.create_task(
             self._run_analysis_and_respond(video_id, original_message, task_identifier, state)
@@ -58,6 +61,7 @@ class OrchestratorAgent:
     async def _run_analysis_and_respond(
         self, video_id: str, message: types.Message, task_identifier: TaskIdentifier, state: FSMContext
     ):
+        """Обертка для фоновой задачи: выполняет анализ, обрабатывает результат, ошибки и отмену."""
         try:
             fsm_data = await state.get_data()
             original_prompt = fsm_data.get("original_prompt", "Summarize this video.")
@@ -90,6 +94,7 @@ class OrchestratorAgent:
             task_manager.remove_task(task_identifier)
 
     def _format_response(self, result: str) -> OrchestratorResponse:
+        """Форматирует финальный результат (строку) в словарь для Responder."""
         if not result:
             self.logger.error("A function handler returned a None or empty result.")
             return {'type': 'text', 'content': "К сожалению, произошла внутренняя ошибка..."}

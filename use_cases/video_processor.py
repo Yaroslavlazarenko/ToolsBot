@@ -8,7 +8,6 @@ from google.genai.types import Part
 
 from services.gemini_service import GeminiService
 from core.enums import GeminiModel
-from core.exceptions import VideoProcessingError
 from utils.video_cutter import cut_video_to_segments
 from utils.download_yt_video import download_yt_video
 
@@ -54,8 +53,8 @@ class VideoProcessor:
             return self._generate_report(user_prompt, video_id, segment_descriptions)
 
         except Exception as e:
-            raise VideoProcessingError(f"A critical error occurred during video analysis: {e}") from e
-        
+            raise RuntimeError(f"A critical error occurred during video analysis: {e}") from e
+
         finally:
             if original_video_path and os.path.exists(original_video_path):
                 os.remove(original_video_path)
